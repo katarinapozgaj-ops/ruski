@@ -165,6 +165,21 @@ var TK=[
  tt2:["10. Саставити пробни биланс, завршни биланс и закључити пословне књиге."],
  notes:["Жиро-рачуна нема у почетном стању: конто се отвара кад се први пут појави (промјена бр. 3). Пазар из промјене 7 је онај из промјене 4 (4.000 КМ)."]}
 ];
+// --- Додатни примјери (нису из уџбеника) ---
+TK.push({id:"m301",own:true,title:"Мој примјер 1 — „Козара“ Приједор",src:"Додатни примјер: сва 4 типа промјена, нова конта, сложен став",km:3,dif:"Средњи",close:true,dc:"31.03.",reopen:"01.04.",d0:"01.03.",
+ ps:[it("gradj","Грађевински објекти",50000),it("opr","Опрема",20000),it("mat","Материјал",6000),it("kup","Купци",4000),it("ziro","Жиро-рачун",15000),it("blag","Благајна",500),it("dobs","Добављачи за обртна средства",3000),it("kos","Кредити за основна средства",12000),it("kap","Сопствени капитал",null)],
+ tt:["Предузеће „Козара“ Приједор има 01.03. сљедеће стање: грађевински објекти 50.000, опрема 20.000, материјал 6.000, купци 4.000, жиро-рачун 15.000, благајна 500, добављачи за обртна средства 3.000, кредити за основна средства 12.000, сопствени капитал – израчунати.","01.03. Саставити почетни биланс, отворити дневник и главну књигу и прокњижити промјене."],
+ ev:[ev("03.03.","nabMat",4000,{t:"Од добављача је набављен материјал, фактура бр. 21 гласи на 4.000 КМ."}),
+  ev("06.03.","naplKup",3000,{t:"Купци су уплатили на жиро-рачун 3.000 КМ (извод бр. 5)."}),
+  ev("09.03.","platDobs",3000,{t:"Са жиро-рачуна је плаћен дуг добављачима из почетног стања, 3.000 КМ (извод бр. 6)."}),
+  ev("12.03.","matProiz",5000,{t:"По требовању бр. 3 издат је материјал у производњу у вриједности од 5.000 КМ."}),
+  ev("15.03.","nabOpr",6000,{t:"Купљена је опрема (рачунар и штампач), фактура добављача бр. 40 гласи на 6.000 КМ."}),
+  ev("18.03.","dosKred",6000,{t:"Банка је из кредита за основна средства платила фактуру бр. 40 (извод бр. 7)."}),
+  ev("22.03.","kupMix",1000,{t:"Купци су платили остатак дуга од 1.000 КМ: 40% у готовом (налог благајни), а 60% на жиро-рачун (извод бр. 8).",D:[["blag",400],["ziro",600]],P:[["kup",1000]]}),
+  ev("25.03.","prim",2500,{acc:"inv",t:"Од другог предузећа без накнаде примљен је пословни инвентар (столови и столице) вриједности 2.500 КМ."}),
+  ev("28.03.","otplKos",2000,{t:"Са жиро-рачуна је плаћена рата кредита за основна средства, 2.000 КМ (извод бр. 9)."})],
+ tt2:["31.03. Саставити пробни биланс, крајњи биланс и закључити дневник и главну књигу.","01.04. Отворити пословне књиге."],
+ notes:["Ово је додатни примјер, није из уџбеника. У њему има сва 4 типа билансних промјена, један сложен став (22.03.), три конта која се отварају током мјесеца (Производња у току, Добављачи за основна средства, Пословни инвентар) и два конта која на крају имају салдо 0 (Купци, Добављачи за основна средства).","Савјет: прије књижења сваке промјене запитај се „шта се повећава, а шта смањује?“ и „је ли то актива или пасива?“."]});
 
 // --- Стање ---
 var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null};
@@ -532,7 +547,7 @@ function walletSum(){var k=0;for(var w in G.wallet)if(G.wallet.hasOwnProperty(w)
 function switchHTML(){return '<div class="g2-switch"><button data-g2a="grade" data-v="1" class="'+(G.grade===1?"on":"")+'">1. разред</button><button data-g2a="grade" data-v="2" class="'+(G.grade===2?"on":"")+'">2. разред</button></div>';}
 function renderHome(){var s='<div class="nsl"><div class="minibar"><div class="logo"><span>💰</span> BookTrainer</div><div class="xpchip">💰 '+walletSum()+' КМ</div></div>'+switchHTML()+'<div class="g2" style="max-width:540px"><h1>2. разред</h1><div class="g2-lead">Књиговодство и практична настава. Области иду редом као у уџбенику.</div>';
  var done=0;TK.forEach(function(t){if(G.stats[t.id]&&G.stats[t.id].best===100)done++;});
- s+='<button class="g2-card" data-g2a="go" data-v="area"><div class="g2-ct"><span class="ic">📒</span>I Пословне књиге двојног књиговодства</div><div class="g2-cd">Дневник, главна књига (Т-конта), пробни биланс, закључак књига</div><div class="g2-cm"><span class="g2-pill ok">✓ '+TK.length+' зад. из уџбеника</span><span class="g2-pill">+ вјежбе</span>'+(done?'<span class="g2-pill ok">'+done+' ријешено</span>':'')+'</div></button>';
+ s+='<button class="g2-card" data-g2a="go" data-v="area"><div class="g2-ct"><span class="ic">📒</span>I Пословне књиге двојног књиговодства</div><div class="g2-cd">Дневник, главна књига (Т-конта), пробни биланс, закључак књига</div><div class="g2-cm"><span class="g2-pill ok">✓ '+TK.filter(function(t){return !t.own;}).length+' зад. из уџбеника</span><span class="g2-pill ok">+ '+TK.filter(function(t){return t.own;}).length+' додатни</span><span class="g2-pill">+ вјежбе</span>'+(done?'<span class="g2-pill ok">'+done+' ријешено</span>':'')+'</div></button>';
  [["📈","II Евиденција расхода и прихода и утврђивање резултата"],["⏳","Временска разграничења расхода и прихода"],["🏭","III Евиденција основних средстава"],["🤝","IV Евиденција потраживања и обавеза"],["💵","V Евиденција готовине и готовинских еквивалената"]].forEach(function(x){s+='<div class="g2-card lock"><div class="g2-ct"><span class="ic">'+x[0]+'</span>'+x[1]+'</div><div class="g2-cm"><span class="g2-pill">🔒 Ускоро</span></div></div>';});
  s+='<div style="text-align:center;margin-top:16px"><button class="btn2" data-g2a="go" data-v="parent">👪 За родитеље</button></div></div></div>';return s;}
 function renderArea(){var s='<div class="top"><button data-g2a="go" data-v="home">← Назад</button><span class="xpchip" style="font-size:11px;color:#fbbf24">💰 '+walletSum()+' КМ</span></div><div class="g2"><h1>📒 Пословне књиге двојног књиговодства</h1><div class="g2-lead">Почни са теоријом и урађеним примјером „Дрина“, па ради задатке из уџбеника. Нове вјежбе можеш правити колико хоћеш.</div>';
@@ -540,8 +555,10 @@ function renderArea(){var s='<div class="top"><button data-g2a="go" data-v="home
  s+='<button class="g2-card" data-g2a="go" data-v="quiz"><div class="g2-ct"><span class="ic">❓</span>Провјерите своје знање</div><div class="g2-cd">14 питања из уџбеника, са одговорима</div></button>';
  s+='<button class="g2-card" data-g2a="go" data-v="drill"><div class="g2-ct"><span class="ic">⚡</span>Брзо контирање</div><div class="g2-cd">Једна промјена, два конта: шта дугује, шта потражује? Са објашњењем.</div>'+(G.dst.n?'<div class="g2-cm"><span class="g2-pill">'+G.dst.ok+'/'+G.dst.n+' тачно</span></div>':'')+'</button>';
  s+='<div class="g2-sec">Задаци из уџбеника</div>';
- TK.forEach(function(t){s+='<button class="g2-card" data-g2a="open" data-v="'+t.id+'"><div class="g2-ct">'+t.title+'</div><div class="g2-cd">'+t.src+' · '+t.ev.length+' промјена'+(t.close?' · закључак':'')+'</div><div class="g2-cm">'+pillsFor(t)+'</div></button>';});
+ function card(t){return '<button class="g2-card" data-g2a="open" data-v="'+t.id+'"><div class="g2-ct">'+t.title+'</div><div class="g2-cd">'+t.src+' · '+t.ev.length+' промјена'+(t.close?' · закључак':'')+'</div><div class="g2-cm">'+pillsFor(t)+'</div></button>';}
+ TK.filter(function(t){return !t.own;}).forEach(function(t){s+=card(t);});
  s+='<div class="g2-note g2-warn">Задатак бр. 4 („Маркет“) још није додат: у промјени 7 продавница продаје робе за 10.000 КМ, а у продавници има само 3.000 КМ робе. Додаћемо га кад провјеримо како га ради наставник.</div>';
+ s+='<div class="g2-sec">Додатни примјери</div>';TK.filter(function(t){return t.own;}).forEach(function(t){s+=card(t);});
  s+='<div class="g2-sec">Нова вјежба</div><div class="g2-cd" style="font-size:11px;color:#94a3b8;margin-bottom:6px">Апликација смисли ново предузеће и промјене. Рјешење и објашњења су увијек ту.</div><div class="g2-chips"><button class="btn2" data-g2a="gen" data-v="5">🎲 5 промјена</button><button class="btn2" data-g2a="gen" data-v="8">🎲 8 промјена</button><button class="btn2" data-g2a="gen" data-v="12">🎲 12 промјена</button></div>';
  if(G.gen){var t=G.gen;s+='<button class="g2-card" data-g2a="open" data-v="'+t.id+'"><div class="g2-ct">'+t.title+'</div><div class="g2-cd">'+t.src+'</div><div class="g2-cm">'+pillsFor(t)+'</div></button>';}
  return s+'</div>';}
