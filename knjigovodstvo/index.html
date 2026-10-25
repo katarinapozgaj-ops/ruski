@@ -474,12 +474,12 @@ ex:{u:"Улаз: "+fmt(e.q)+" "+(e.t==="ps"?"(почетно стање — ко
 else if(e.t==="tr"){var v2=e.q*pp;st-=e.q;sl-=v2;r.push({d:e.d,n:e.n,u:null,iz:e.q,s:st,c:pp,dg:null,pt:v2,sl:sl,
 ex:{iz:"Излаз: "+fmt(e.q)+" (издато у производњу на основу требовања — документ којим производња тражи материјал)",s:"Ново стање: претходно "+fmt(ps)+" − издато "+fmt(e.q)+" = "+fmt(st)+" (колико остаје у магацину)",c:"Планска: "+fmt(pp)+" КМ (код планских цијена, иста цијена и за улаз и за излаз)",pt:"Потражује (вриједност излаза): "+fmt(e.q)+" × "+fmt(pp)+" = "+fmt(v2)+" КМ. Сваки излаз књижимо на ПОТРАЖНУ (десну) страну.",sl:"Салдо: претходни "+fmt(psl)+" − излаз "+fmt(v2)+" = "+fmt(sl)+" КМ (колико вриједности остаје)"}});}
 else if(e.t==="pv"){var v3=e.q*pp;st+=e.q;sl+=v3;r.push({d:e.d,n:e.n,u:null,iz:-e.q,s:st,c:pp,dg:null,pt:-v3,sl:sl,
-ex:{iz:"Повратница: −"+fmt(e.q)+" (враћен неутрошен материјал из производње у магацин). Минус на излазу значи да се СМАЊУЈЕ потражна страна (СТОРНО).",s:"Стање: "+fmt(ps)+" + "+fmt(e.q)+" = "+fmt(st)+" (повећава се јер се материјал вратио)",pt:"СТОРНО потражне: −"+fmt(v3)+" КМ. Повратница поништава дио претходног требовања — смањује потражну страну.",sl:"Салдо: "+fmt(psl)+" + "+fmt(v3)+" = "+fmt(sl)+" КМ (повећава се, јер имамо више материјала)"}});}
+ex:{iz:"Повратница: −"+fmt(e.q)+" (враћен неутрошен материјал из производње у магацин). Минус на излазу значи да се СМАЊУЈЕ потражна страна (СТОРНО).",s:"Стање: "+fmt(ps)+" + "+fmt(e.q)+" = "+fmt(st)+" (повећава се јер се материјал вратио)",c:"Цијена: "+fmt(pp)+" КМ — код планске методе повратница се увијек вреднује по ПЛАНСКОЈ цијени (иста као код требовања).",pt:"СТОРНО потражне: −"+fmt(v3)+" КМ. Повратница поништава дио претходног требовања — смањује потражну страну.",sl:"Салдо: "+fmt(psl)+" + "+fmt(v3)+" = "+fmt(sl)+" КМ (повећава се, јер имамо више материјала)"}});}
 else if(e.t==="manjak"){var v4=e.q*pp;st-=e.q;sl-=v4;r.push({d:e.d,n:e.n,u:null,iz:e.q,s:st,c:pp,dg:null,pt:v4,sl:sl,
 ex:{iz:"Мањак утврђен инвентуром: "+fmt(e.q)+" (стварно стање у магацину је мање од књиговодственог — разлика се књижи као излаз)",s:"Стање: "+fmt(ps)+" − "+fmt(e.q)+" = "+fmt(st)+" (смањујемо на стварно стање)",c:"Планска: "+fmt(pp)+" КМ",pt:"Потражује: "+fmt(e.q)+" × "+fmt(pp)+" = "+fmt(v4)+" КМ. Мањак се књижи на ПОТРАЖНУ страну — као да је материјал издат.",sl:"Салдо: "+fmt(psl)+" − "+fmt(v4)+" = "+fmt(sl)+" КМ"}});}
 else if(e.t==="visak"){var v5=e.q*pp;st+=e.q;sl+=v5;r.push({d:e.d,n:e.n,u:e.q,iz:null,s:st,c:pp,dg:v5,pt:null,sl:sl,
 ex:{u:"Вишак утврђен инвентуром: "+fmt(e.q)+" (стварно стање у магацину је ВЕЋЕ од књиговодственог — разлика се књижи као улаз)",s:"Стање: "+fmt(ps)+" + "+fmt(e.q)+" = "+fmt(st)+" (повећавамо на стварно стање)",c:"Планска: "+fmt(pp)+" КМ",dg:"Дугује: "+fmt(e.q)+" × "+fmt(pp)+" = "+fmt(v5)+" КМ. Вишак се књижи на ДУГОВНУ страну — као да је материјал примљен.",sl:"Салдо: "+fmt(psl)+" + "+fmt(v5)+" = "+fmt(sl)+" КМ"}});}}
-r.push({d:"",n:"Салдо за изр.",u:null,iz:st,s:0,c:pp,dg:null,pt:sl,sl:0,ex:{iz:"Остатак: "+fmt(st)+" — ова количина се преноси на потражну страну да се конто затвори (Д=П)",s:"0 — конто је затворен, стање је нула јер је сав материјал распоређен",pt:fmt(sl)+" КМ — вриједност остатка. Конто је затворен кад Д = П!",sl:"0 = конто затворен (салдо постаје 0 кад упишемо салдо за изравнање на потражну)"}});return r;}
+r.push({d:"",n:"Салдо за изр.",u:null,iz:st,s:0,c:pp,dg:null,pt:sl,sl:0,ex:{iz:"Остатак: "+fmt(st)+" — ова количина се преноси на потражну страну да се конто затвори (Д=П)",c:"Цијена: "+fmt(pp)+" КМ — остатак се преноси по ПЛАНСКОЈ цијени, јер се по њој води цијели конто.",s:"0 — конто је затворен, стање је нула јер је сав материјал распоређен",pt:fmt(sl)+" КМ — вриједност остатка. Конто је затворен кад Д = П!",sl:"0 = конто затворен (салдо постаје 0 кад упишемо салдо за изравнање на потражну)"}});return r;}
 
 function sFifo(ev){var r=[],b=[],st=0,sl=0,ps,psl;for(var i=0;i<ev.length;i++){var e=ev[i];ps=st;psl=sl;
 if(e.t==="ps"||e.t==="nab"){var v=e.q*e.p;b.push({q:e.q,p:e.p});st+=e.q;sl+=v;
@@ -502,7 +502,7 @@ ex:{u:"Улаз: "+fmt(e.q)+" "+(e.t==="ps"?"(почетно стање)":"(но
 else if(e.t==="tr"){var v4=Math.round(e.q*av);st-=e.q;sl-=v4;r.push({d:e.d,n:e.n,u:null,iz:e.q,s:st,c:av,dg:null,pt:v4,sl:sl,
 ex:{iz:fmt(e.q)+" издато у производњу (на основу требовања)",s:fmt(ps)+" − "+fmt(e.q)+" = "+fmt(st)+" (преостаје у магацину)",c:"Просјечна цијена: "+fmt(av)+" КМ — ИСТА је док не дође нова набавка! Тек нова набавка мијења просјечну.",pt:fmt(e.q)+" × "+fmt(av)+" = "+fmt(v4)+" КМ — вриједност издатог материјала на ПОТРАЖНУ страну",sl:fmt(psl)+" − "+fmt(v4)+" = "+fmt(sl)+" КМ (преостала вриједност)"}});}
 else if(e.t==="pv"){var v5=Math.round(e.q*av);st+=e.q;sl+=v5;r.push({d:e.d,n:e.n,u:null,iz:-e.q,s:st,c:av,dg:null,pt:-v5,sl:sl,
-ex:{iz:"Повратница: −"+fmt(e.q)+" (враћен у магацин). СТОРНО — минус на излазу.",s:fmt(ps)+" + "+fmt(e.q)+" = "+fmt(st),pt:"СТОРНО: −"+fmt(v5)+" КМ (смањује потражну страну)",sl:fmt(psl)+" + "+fmt(v5)+" = "+fmt(sl)+" КМ"}});}}
+ex:{iz:"Повратница: −"+fmt(e.q)+" (враћен у магацин). СТОРНО — минус на излазу.",s:fmt(ps)+" + "+fmt(e.q)+" = "+fmt(st),c:"Цијена: "+fmt(av)+" КМ — повратница се вреднује по ТРЕНУТНОЈ просјечној цијени (оној по којој је материјал и издат). Просјечна цијена се НЕ мијења.",pt:"СТОРНО: −"+fmt(v5)+" КМ (смањује потражну страну)",sl:fmt(psl)+" + "+fmt(v5)+" = "+fmt(sl)+" КМ"}});}}
 r.push({d:"",n:"Салдо за изр.",u:null,iz:st,s:0,c:null,dg:null,pt:sl,sl:0,ex:{iz:fmt(st)+" — остатак количине, преноси се на потражну за затварање",s:"0 — конто затворен",pt:fmt(sl)+" КМ. Д = П, конто затворен!",sl:"0"}});return r;}
 
 function sSyn(a,b){var r=[];for(var i=0;i<a.length;i++){var s=a[i],v=b[i]||{};var dg=(s.dg||0)+(v.dg||0),pt=(s.pt||0)+(v.pt||0),sl2=(s.sl||0)+(v.sl||0);
@@ -981,7 +981,7 @@ s+='<div class="sec-label"><h2>\u041e\u0431\u043b\u0430\u0441\u0442\u0438</h2><p
 // GRID
 s+='<div class="tgrid">';
 for(var tpi=0;tpi<TOPICS.length;tpi++){var tp=TOPICS[tpi];
-var prog=0;if(tp.ready){for(var si in S.stats)if(S.stats.hasOwnProperty(si))prog+=S.stats[si].best;prog=Math.min(100,Math.round(prog/totT));}
+var prog=0;if(tp.ready){var aT=T.filter(function(x){return x.area===tp.id});for(var ai=0;ai<aT.length;ai++){var st0=S.stats[aT[ai].id];if(st0)prog+=st0.best;}prog=aT.length?Math.min(100,Math.round(prog/aT.length)):0;}
 s+='<div class="tc2 c'+tpi+(tp.ready?'':' locked')+'" '+(tp.ready?'onclick="S.area='+tp.id+';S.view=\'menu\';render()"':'')+'>';
 s+='<div class="tchead"><span class="tcico">'+tp.icon+'</span><span class="tcnm">'+tp.title+'</span></div>';
 s+='<div class="tcsub">'+tp.desc+'</div>';
@@ -1091,7 +1091,7 @@ var cur=t.tabs.find(function(x){return x.k===S.tab})||t.tabs[0];
 if(cur.m==="fifo")s+=bldT("fifo",d.fifo,mc,ml);
 else if(cur.m==="avg")s+=bldT("avg",d.avg,mc,ml);
 else if(cur.m==="plan"&&cur.k==="plan")s+=bldT("plan",d.plan,mc,ml);
-else if(cur.k==="boja")s+=bldT("boja",d.boja,mc,ml);
+else if(cur.k==="boja"&&cur.m==="plan")s+=bldT("boja",d.boja,mc,ml);
 else if(cur.k==="stof")s+=bldT("stof",d.stof,mc,ml);
 else if(cur.k==="svila")s+=bldT("svila",d.svila,mc,ml);
 else if(cur.k==="pamuk")s+=bldT("pamuk",d.pamuk,mc,ml);
