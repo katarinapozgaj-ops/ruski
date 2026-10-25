@@ -43,6 +43,7 @@ tbody td{padding:3px 2px;font-size:10px;border-bottom:1px solid rgba(255,255,255
 .tip .cl{margin-top:5px;color:#94a3b8;font-size:9px;cursor:pointer}
 .tr td{padding:5px;background:rgba(34,197,94,.1);font-weight:700;color:#22c55e;font-size:10px}
 .cr td{padding:4px 5px;font-size:10px;font-weight:700}
+.ans-hid{padding:8px;text-align:center;font-size:10px;color:#94a3b8;background:rgba(255,255,255,.03);border-radius:8px;margin-top:4px}
 .crok{background:rgba(34,197,94,.1);color:#22c55e}
 .crbd{background:rgba(239,68,68,.1);color:#ef4444}
 .sumr td{padding:4px 2px;font-size:10px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(99,102,241,.08)}
@@ -217,7 +218,8 @@ tbody td{padding:3px 2px;font-size:10px;border-bottom:1px solid rgba(255,255,255
 .mob-only{display:none}
 @media(max-width:700px){
   
-  .mob-only{display:none!important}
+  .desk-only{display:none!important}
+  .mob-only{display:block!important}
   .ctn{padding:6px 4px}
   h1{font-size:18px}
   h2{font-size:14px!important}
@@ -250,7 +252,8 @@ tbody td{padding:3px 2px;font-size:10px;border-bottom:1px solid rgba(255,255,255
 
 /* Sticky task text on mobile */
 @media(max-width:700px){
-  .tt{position:sticky;top:37px;z-index:15;margin-bottom:4px;border-radius:0;border-left:none;border-right:none;max-height:45vh;overflow-y:auto}
+  .tt{position:sticky;top:37px;z-index:15;margin-bottom:4px;border-radius:0;border-left:none;border-right:none;max-height:30vh;overflow-y:auto}
+  .tt.tt-min .ttl,.tt.tt-min .inf{display:none}
   .tth{padding:6px 10px;font-size:11px}
   .ttl{padding:3px 10px;font-size:10px}
   .top{padding:4px 10px}
@@ -466,6 +469,9 @@ function resetProgress(){
  render();
 }
 
+// На телефону се текст задатка скупи док ученик уписује, да табела има мјеста
+function togTT(){var el=document.querySelector(".tt");if(el&&el.classList.contains("tt-min")){el.classList.remove("tt-min");var a=el.querySelector(".tt-arr");if(a)a.textContent="\u25b2";return;}saveDOM();S.showTT=!S.showTT;S.skipRead=true;render();S.skipRead=false;}
+document.addEventListener("focusin",function(e){if(window.innerWidth>700||!e.target||!e.target.classList||!e.target.classList.contains("ci"))return;var el=document.querySelector(".tt");if(el&&!el.classList.contains("tt-min")){el.classList.add("tt-min");var a=el.querySelector(".tt-arr");if(a)a.textContent="\u25bc";}});
 function saveDOM(){if(S.skipRead)return;var allI=document.querySelectorAll('.ci');for(var si=0;si<allI.length;si++){if(allI[si].dataset.k){var el=allI[si];if(el.offsetParent!==null||el.offsetWidth>0)S.inp[el.dataset.k]=el.value;}}}
 
 function sPlan(ev,pp){var r=[],st=0,sl=0,ps,psl;for(var i=0;i<ev.length;i++){var e=ev[i];ps=st;psl=sl;
@@ -798,8 +804,10 @@ S.skipRead=true;render();S.skipRead=false;}
 
 function doReset(){S.inp={};S.chk={};S.expK=null;S.skipRead=true;render();S.skipRead=false;}
 
+// У режиму Тест тачни збирови се не откривају прије провјере
+function showAns(pfx){if(S.learn)return true;for(var k in S.chk)if(S.chk.hasOwnProperty(k)&&k.indexOf(pfx+"-")===0)return true;return false;}
 function bldT(pfx,rows,cols,lbl){if(!rows||!rows.length)return"";
-var s="";
+var s="";var sa=showAns(pfx);
 // ===== DESKTOP TABLE =====
 s+='<div class="desk-only"><div style="overflow-x:auto"><table><thead>';
 if(cols.length===7){s+='<tr><th colspan="2"></th><th colspan="3" style="color:#60a5fa;font-size:8px;letter-spacing:1px;border-bottom:2px solid rgba(96,165,250,.2)">КОЛИЧИНА</th><th style="color:#94a3b8;font-size:7px"></th><th colspan="3" style="color:#fbbf24;font-size:8px;letter-spacing:1px;border-bottom:2px solid rgba(251,191,36,.2)">ВРИЈЕДНОСТ (КМ)</th></tr>';}
@@ -823,10 +831,11 @@ s+='</td>';}}s+='</tr>';}
 s+='<tr class="sumr"><td></td><td style="font-weight:700;color:#818cf8;font-size:10px">Σ ТВОЈ ЗБИР</td>';
 for(var ck=0;ck<cols.length;ck++){var c0=cols[ck];if(c0==="s"||c0==="c"){s+='<td></td>';}else{var uSum=0;for(var sr=0;sr<rows.length;sr++){uSum+=pv(S.inp[pfx+"-"+sr+"-"+c0]);}s+='<td style="text-align:right;font-weight:700;color:#a5b4fc;font-size:10px"><span data-livesum="'+pfx+'-'+c0+'">'+fmt(Math.round(uSum*100)/100)+'</span></td>';}}s+='</tr>';
 
-s+='<tr class="ansr"><td></td><td>✅ ТАЧНО</td>';
-for(var ck3=0;ck3<cols.length;ck3++){var c3=cols[ck3];if(c3==="s"||c3==="c"){s+='<td></td>';}else{var sm3=0;for(var sr3=0;sr3<rows.length;sr3++)sm3+=(rows[sr3][c3]||0);s+='<td style="text-align:right">'+fmt(sm3)+'</td>';}}s+='</tr>';
+if(!sa)s+='<tr><td colspan="'+(cols.length+2)+'"><div class="ans-hid">🔒 Тачни збирови се приказују послије „Провјери“</div></td></tr>';
+else{s+='<tr class="ansr"><td></td><td>✅ ТАЧНО</td>';
+for(var ck3=0;ck3<cols.length;ck3++){var c3=cols[ck3];if(c3==="s"||c3==="c"){s+='<td></td>';}else{var sm3=0;for(var sr3=0;sr3<rows.length;sr3++)sm3+=(rows[sr3][c3]||0);s+='<td style="text-align:right">'+fmt(sm3)+'</td>';}}s+='</tr>';}
 var tD=0,tP=0;for(var j=0;j<rows.length;j++){tD+=(rows[j].dg||0);tP+=(rows[j].pt||0);}
-if(cols.indexOf("dg")>=0){var ok2=Math.abs(tD-tP)<2;s+='<tr class="cr"><td colspan="2" class="'+(ok2?"crok":"crbd")+'">⚖ Д = П ?</td>';
+if(sa&&cols.indexOf("dg")>=0){var ok2=Math.abs(tD-tP)<2;s+='<tr class="cr"><td colspan="2" class="'+(ok2?"crok":"crbd")+'">⚖ Д = П ?</td>';
 for(var ck4=0;ck4<cols.length;ck4++){var c4=cols[ck4];var cs=ok2?"crok":"crbd";
 if(c4==="dg")s+='<td class="'+cs+'" style="text-align:right">'+fmt(tD)+'</td>';
 else if(c4==="pt")s+='<td class="'+cs+'" style="text-align:right">'+fmt(tP)+'</td>';
@@ -867,12 +876,13 @@ s+='<div class="ms-item"><div class="ms-lbl">'+sumLbls[mi2]+'</div><div class="m
 s+='</div></div>';
 
 // ✅ ТАЧНО (mobile)
-s+='<div class="mob-summary"><div class="ms-title ans">✅ ТАЧНО</div><div class="ms-grid">';
+if(!sa)s+='<div class="ans-hid">🔒 Тачни збирови се приказују послије „Провјери“</div>';
+else{s+='<div class="mob-summary"><div class="ms-title ans">✅ ТАЧНО</div><div class="ms-grid">';
 for(var mi4=0;mi4<sumCols.length;mi4++){var sc4=sumCols[mi4];var sm4=0;for(var sr6=0;sr6<rows.length;sr6++)sm4+=(rows[sr6][sc4]||0);
 s+='<div class="ms-item"><div class="ms-lbl">'+sumLbls[mi4]+'</div><div class="ms-val" style="color:#22c55e">'+fmt(sm4)+'</div></div>';}
-s+='</div></div>';
+s+='</div></div>';}
 // Д=П (mobile)
-if(cols.indexOf("dg")>=0){var ok3=Math.abs(tD-tP)<2;
+if(sa&&cols.indexOf("dg")>=0){var ok3=Math.abs(tD-tP)<2;
 s+='<div class="mob-summary"><div class="ms-title dp">⚖ Д = П ?</div><div style="text-align:center;font-size:13px;font-weight:800;color:'+(ok3?"#22c55e":"#ef4444")+'">'+(ok3?"✓ ТАЧНО! Д="+fmt(tD)+" П="+fmt(tP):"✗ Д="+fmt(tD)+" П="+fmt(tP))+'</div></div>';}
 s+='</div></div>';
 return s;}
@@ -1081,7 +1091,7 @@ var t=S.task,d=S.data;
 var s='<div class="top"><button onclick="S.view=\'menu\';render()">← Назад</button><div style="font-size:10px;color:#94a3b8">';
 if(anyC)s+='<span style="color:'+(allOk?"#22c55e":"#f59e0b")+';font-weight:700">'+okN+'/'+totN+'</span> ';
 s+='<span class="mode-ind '+(S.learn?'learn':'test')+'" onclick="saveDOM();S.learn=!S.learn;S.skipRead=true;render();S.skipRead=false">'+(S.learn?'\ud83c\udf93 \u0423\u0447\u0435\u045a\u0435':'\ud83d\udcdd \u0422\u0435\u0441\u0442 '+S.task.km+'\u041a\u041c')+'</span></div></div>';
-s+='<div class="tt"><div class="tth" onclick="saveDOM();S.showTT=!S.showTT;S.skipRead=true;render();S.skipRead=false"><span>\ud83d\udccb '+t.title+'</span><span>'+(S.showTT?"\u25b2":"\u25bc")+'</span></div>';
+s+='<div class="tt"><div class="tth" onclick="togTT()"><span>\ud83d\udccb '+t.title+'</span><span class="tt-arr">'+(S.showTT?"\u25b2":"\u25bc")+'</span></div>';
 if(S.showTT){if(t.info&&t.info.length){s+='<div class="inf">';for(var ii=0;ii<t.info.length;ii++)s+=t.info[ii]+'<br>';s+='</div>';}
 for(var tli=0;tli<t.tt.length;tli++)s+='<div class="ttl">'+t.tt[tli]+'</div>';}s+='</div>';
 s+='<div class="ctn">';
@@ -1163,15 +1173,17 @@ s+='<td style="text-align:right;font-weight:700;color:#a5b4fc;font-size:10px"><s
 s+='<td></td>';
 s+='<td style="text-align:right;font-weight:700;color:#a5b4fc;font-size:10px"><span data-livesum="izv-sl">'+fmt(liveSl)+'</span></td>';
 s+='</tr>';
-// ТАЧНО ред — увек видљив
-s+='<tr class="ansr"><td></td><td>\u2705 \u0422\u0410\u0427\u041d\u041e</td>';
+// ТАЧНО ред — у режиму Тест тек послије провјере
+var saI=showAns("izv");
+if(!saI)s+='<tr><td colspan="6"><div class="ans-hid">🔒 Тачни збирови се приказују послије „Провјери“</div></td></tr>';
+else{s+='<tr class="ansr"><td></td><td>\u2705 \u0422\u0410\u0427\u041d\u041e</td>';
 s+='<td style="text-align:right">'+fmt(tD2)+'</td>';
 s+='<td style="text-align:right">'+fmt(tP2)+'</td>';
 s+='<td></td>';
 s+='<td style="text-align:right">'+fmt(tSl)+'</td>';
-s+='</tr>';
+s+='</tr>';}
 s+='</tbody></table></div>';
-s+='<div class="inf" style="margin-top:8px;font-size:10px">\ud83d\udca1 \u0421\u0430\u043b\u0434\u043e \u0438\u0437\u0432\u043e\u0434\u0430 ('+fmt(tSl)+') \u041c\u041e\u0420\u0410 = \u0441\u0438\u043d\u0442\u0435\u0442\u0438\u0447\u043a\u043e\u043c \u043a\u043e\u043d\u0442\u0443. \u041f\u0440\u043e\u043c\u0435\u0442 \u0414 ('+fmt(tD2)+') \u0438 \u041f ('+fmt(tP2)+') \u0438\u0437 \u0438\u0437\u0432\u043e\u0434\u0430 = \u043f\u0440\u043e\u043c\u0435\u0442 \u043d\u0430 \u0441\u0438\u043d\u0442\u0435\u0442\u0438\u0447\u043a\u043e\u043c.</div></div>';
+if(saI)s+='<div class="inf" style="margin-top:8px;font-size:10px">\ud83d\udca1 \u0421\u0430\u043b\u0434\u043e \u0438\u0437\u0432\u043e\u0434\u0430 ('+fmt(tSl)+') \u041c\u041e\u0420\u0410 = \u0441\u0438\u043d\u0442\u0435\u0442\u0438\u0447\u043a\u043e\u043c \u043a\u043e\u043d\u0442\u0443. \u041f\u0440\u043e\u043c\u0435\u0442 \u0414 ('+fmt(tD2)+') \u0438 \u041f ('+fmt(tP2)+') \u0438\u0437 \u0438\u0437\u0432\u043e\u0434\u0430 = \u043f\u0440\u043e\u043c\u0435\u0442 \u043d\u0430 \u0441\u0438\u043d\u0442\u0435\u0442\u0438\u0447\u043a\u043e\u043c.</div></div>';
 }}}
 else if(cur.k==="mj"){s+=renderMjesecni(t,d);}
 else if(cur.m==="dob"){var dk=cur.k;s+=bldT(dk,d[dk],["dg","pt","sl"],["Дугује","Потраж.","Салдо"]);}
