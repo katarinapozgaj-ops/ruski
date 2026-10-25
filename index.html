@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="sr-Cyrl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Вешање</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=PT+Sans:wght@400;700&display=swap">
+<style>
+  /* Layout: a page from a Serbian school notebook (sveska) — ruled lines, red margin, fountain-pen ink. */
+  :root {
+    --paper: #f6f8fc;
+    --rule: rgba(60, 100, 190, 0.16);
+    --margin: #d4473f;
+    --ink: #1f3d8f;
+    --fg: #232a3d;
+    --muted: #6a7390;
+    --key: #ffffff;
+    --key-edge: #c9d2e6;
+    --hit: #2f7d4f;
+    --miss: #b8bfd0;
+    --font-hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+    --font-body: "PT Sans", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131a2c; --rule: rgba(140, 170, 255, 0.10); --margin: #e0716a;
+      --ink: #9cb8ff; --fg: #e5e9f4; --muted: #8a93ad; --key: #1c2540;
+      --key-edge: #2e3a5e; --hit: #6fcf97; --miss: #3a4462; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #131a2c; --rule: rgba(140, 170, 255, 0.10); --margin: #e0716a;
+    --ink: #9cb8ff; --fg: #e5e9f4; --muted: #8a93ad; --key: #1c2540;
+    --key-edge: #2e3a5e; --hit: #6fcf97; --miss: #3a4462; color-scheme: dark;
+  }
+
+  html, body { min-height: 100%; }
+  body {
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 0 calc(max(16px, env(safe-area-inset-left, 0px)) + 6px), var(--margin) 0 calc(max(16px, env(safe-area-inset-left, 0px)) + 8px), transparent 0),
+      repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-block: 20px 40px;
+    padding-left: max(28px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 20px;
+  }
+  h1 {
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 8vw, 3.6rem);
+    line-height: 1;
+    margin: 0;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .score {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .score b { color: var(--fg); font-size: 1.05rem; letter-spacing: 0; }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    gap: 20px 28px;
+    align-items: center;
+  }
+  @media (max-width: 560px) {
+    .board { grid-template-columns: 1fr; justify-items: center; }
+  }
+  .gallows { width: 100%; max-width: 220px; }
+  .gallows svg { width: 100%; height: auto; display: block; }
+  .gallows .part {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.5s ease-out;
+  }
+  .gallows .part.on { stroke-dashoffset: 0; }
+  .gallows .ghost { fill: none; stroke: var(--rule); stroke-width: 2; stroke-dasharray: 4 6; }
+  .lost .gallows .part.figure { stroke: var(--margin); }
+
+  .play { display: flex; flex-direction: column; gap: 14px; min-width: 0; width: 100%; }
+  .category {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .category span { color: var(--margin); font-weight: 700; }
+  .word {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    row-gap: 14px;
+    min-height: 3.4rem;
+  }
+  .word .gap { width: 22px; }
+  .slot {
+    width: clamp(26px, 7vw, 40px);
+    height: clamp(40px, 10vw, 54px);
+    border-bottom: 3px solid var(--fg);
+    display: grid;
+    place-items: end center;
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    line-height: 1;
+    color: var(--ink);
+  }
+  .slot.missed { color: var(--margin); }
+  .slot.pop { animation: pop 0.35s ease-out; }
+  @keyframes pop { from { transform: translateY(-8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .lives { font-size: 0.95rem; color: var(--muted); }
+  .lives b { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .wrong {
+    font-family: var(--font-hand);
+    font-size: 1.6rem;
+    color: var(--margin);
+    min-height: 2rem;
+    letter-spacing: 0.12em;
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
+
+  .message {
+    font-family: var(--font-hand);
+    font-size: 2rem;
+    font-weight: 700;
+    min-height: 2.4rem;
+    color: var(--ink);
+  }
+  .message.win { color: var(--hit); }
+  .message.lose { color: var(--margin); }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  button {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: var(--fg);
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-radius: 8px;
+    padding: 9px 14px;
+  }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  button.primary { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 700; }
+  button:disabled { cursor: default; opacity: 0.55; }
+  select {
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--fg);
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  select:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  .keyboard { display: flex; flex-direction: column; gap: 7px; }
+  .krow { display: flex; justify-content: center; gap: 6px; }
+  .k {
+    flex: 1 1 0;
+    max-width: 54px;
+    min-width: 0;
+    aspect-ratio: 1 / 1.05;
+    padding: 0;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: clamp(1rem, 4.2vw, 1.35rem);
+    border-bottom-width: 3px;
+    transition: transform 0.08s, background 0.2s, color 0.2s;
+  }
+  .k:active:not(:disabled) { transform: translateY(2px); }
+  .k.hit { background: var(--hit); border-color: var(--hit); color: var(--paper); opacity: 1; }
+  .k.miss { background: transparent; color: var(--miss); border-color: var(--miss); text-decoration: line-through; opacity: 1; }
+  .layout-qwerty .krow:nth-child(3) .k { flex: 0 1 54px; }
+
+  .foot { font-size: 0.85rem; color: var(--muted); line-height: 1.5; max-width: 62ch; }
+  .foot kbd {
+    font-family: var(--font-body);
+    border: 1px solid var(--key-edge);
+    border-radius: 4px;
+    padding: 0 5px;
+    background: var(--key);
+    color: var(--fg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallows .part, .k { transition: none; }
+    .slot.pop { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app" lang="sr-Cyrl">
+  <header>
+    <h1>Вешање</h1>
+    <div class="score" aria-live="polite">
+      <span>Победе <b id="wins">0</b></span>
+      <span>Порази <b id="losses">0</b></span>
+      <span>Низ <b id="streak">0</b></span>
+    </div>
+  </header>
+
+  <div class="board">
+    <div class="gallows" aria-hidden="true">
+      <svg viewBox="0 0 200 220">
+        <path class="ghost" d="M20 210 H130 M50 210 V20 H140 V45 M50 50 L80 20"/>
+        <path class="part" pathLength="1" d="M20 210 H130"/>
+        <path class="part" pathLength="1" d="M50 210 V20"/>
+        <path class="part" pathLength="1" d="M50 20 H140 M50 52 L82 20"/>
+        <path class="part" pathLength="1" d="M140 20 V45"/>
+        <circle class="part figure" pathLength="1" cx="140" cy="60" r="15"/>
+        <path class="part figure" pathLength="1" d="M140 75 V132"/>
+        <path class="part figure" pathLength="1" d="M140 90 L118 114 M140 90 L162 114"/>
+        <path class="part figure" pathLength="1" d="M140 132 L120 168 M140 132 L160 168"/>
+      </svg>
+    </div>
+
+    <div class="play">
+      <div class="category">Категорија: <span id="cat">—</span></div>
+      <div class="word" id="word" aria-label="Реч"></div>
+      <div class="lives">Преостало покушаја: <b id="left">8</b></div>
+      <div class="wrong" id="wrong" aria-label="Погрешна слова"></div>
+      <div class="message" id="msg" role="status"></div>
+      <div class="controls">
+        <button class="primary" id="next" type="button">Нова реч</button>
+        <button id="hint" type="button">Откриј слово (−1)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="keyboard" id="kb"></div>
+
+  <div class="controls">
+    <button id="layout" type="button">Распоред: азбука</button>
+    <label for="pick" class="category">Тема</label>
+    <select id="pick">
+      <option value="all">Све теме</option>
+    </select>
+  </div>
+
+  <p class="foot">
+    Погоди реч слово по слово пре него што се цртеж заврши. Имаш 8 грешака.
+    Можеш куцати ћирилицом или латиницом: <kbd>č</kbd> <kbd>ć</kbd> <kbd>š</kbd> <kbd>ž</kbd> <kbd>đ</kbd> раде директно,
+    а за Љ, Њ и Џ користи <kbd>Q</kbd>, <kbd>W</kbd> и <kbd>X</kbd>. <kbd>Enter</kbd> покреће нову реч.
+  </p>
+</div>
+
+<script>
+(function () {
+  const WORDS = {
+    "Животиње": ["МАЧКА", "КОЊ", "ЖИРАФА", "ЛЕПТИР", "ЈЕЖ", "ЖАБА", "КОРЊАЧА", "ПЧЕЛА", "СЛОН", "ЛАСТАВИЦА",
+      "ВЕВЕРИЦА", "ЛИСИЦА", "МЕДВЕД", "ЗЕЦ", "ЋУРКА", "ВУК", "ПЕТАО", "КРАВА", "ДЕЛФИН", "ЛАБУД", "ЈЕЛЕН", "ПУЖ"],
+    "Храна": ["ЈАБУКА", "ХЛЕБ", "ЧОКОЛАДА", "ЛУБЕНИЦА", "ЋЕВАПИ", "ПАСУЉ", "ЈОГУРТ", "ГИБАНИЦА", "КРОМПИР",
+      "ПАРАДАЈЗ", "ЏЕМ", "ЂУВЕЧ", "ПАЛАЧИНКЕ", "ШЉИВА", "ЈАГОДА", "ВИШЊА", "КАЈМАК", "ПЉЕСКАВИЦА", "САРМА", "БУРЕК"],
+    "Градови у Србији": ["БЕОГРАД", "НОВИ САД", "НИШ", "КРАГУЈЕВАЦ", "СУБОТИЦА", "ЧАЧАК", "ЗРЕЊАНИН", "ПАНЧЕВО",
+      "КРАЉЕВО", "ВРАЊЕ", "ЛЕСКОВАЦ", "УЖИЦЕ", "ВАЉЕВО", "ЗАЈЕЧАР", "ШАБАЦ", "СОМБОР", "СМЕДЕРЕВО", "ЈАГОДИНА"],
+    "Природа": ["ПЛАНИНА", "РЕКА", "ДУНАВ", "ШУМА", "ЦВЕЋЕ", "СУНЦЕ", "МЕСЕЦ", "ЗВЕЗДА", "ОБЛАК", "ЈЕЗЕРО",
+      "ДРВО", "ЛИШЋЕ", "ДУГА", "СНЕГ", "КИША", "ЗЕМЉА", "ПЕЋИНА", "ВОДОПАД", "ЛИВАДА", "ОРАХ"],
+    "Кућа и школа": ["СТОЛИЦА", "ПРОЗОР", "ВРАТА", "КЊИГА", "ОЛОВКА", "СВЕСКА", "ЛАМПА", "ОГЛЕДАЛО", "ЈАСТУК",
+      "ТАЊИР", "КАШИКА", "ВИЉУШКА", "ЧАША", "ФРИЖИДЕР", "ТЕЛЕФОН", "ЏЕП", "ЋЕБЕ", "УЧИТЕЉИЦА", "ГУМИЦА", "ТОРБА"]
+  };
+  const AZBUKA = "АБВГДЂЕЖЗИЈКЛЉМНЊОПРСТЋУФХЦЧЏШ";
+  const ROWS_AZBUKA = ["АБВГДЂ", "ЕЖЗИЈК", "ЛЉМНЊО", "ПРСТЋУ", "ФХЦЧЏШ"];
+  const ROWS_QWERTY = ["ЉЊЕРТЗУИОПШЂ", "АСДФГХЈКЛЧЋЖ", "ЏЦВБНМ"];
+  const LATIN = {
+    a: "А", b: "Б", v: "В", g: "Г", d: "Д", "đ": "Ђ", e: "Е", "ž": "Ж", z: "З", i: "И", j: "Ј", k: "К",
+    l: "Л", q: "Љ", m: "М", n: "Н", w: "Њ", o: "О", p: "П", r: "Р", s: "С", t: "Т", "ć": "Ћ", u: "У",
+    f: "Ф", h: "Х", c: "Ц", "č": "Ч", x: "Џ", "š": "Ш"
+  };
+  const MAX = 8;
+
+  const $ = (id) => document.getElementById(id);
+  const app = $("app"), wordEl = $("word"), kb = $("kb"), parts = [...document.querySelectorAll(".gallows .part")];
+
+  const pick = $("pick");
+  Object.keys(WORDS).forEach((c) => {
+    const o = document.createElement("option");
+    o.value = c; o.textContent = c; pick.appendChild(o);
+  });
+
+  let stats = { wins: 0, losses: 0, streak: 0 };
+  let prefs = { layout: "azbuka", topic: "all" };
+  try {
+    stats = Object.assign(stats, JSON.parse(localStorage.getItem("vesanje-stats") || "{}"));
+    prefs = Object.assign(prefs, JSON.parse(localStorage.getItem("vesanje-prefs") || "{}"));
+  } catch (e) {}
+  const save = () => {
+    try {
+      localStorage.setItem("vesanje-stats", JSON.stringify(stats));
+      localStorage.setItem("vesanje-prefs", JSON.stringify(prefs));
+    } catch (e) {}
+  };
+  if (prefs.topic !== "all" && !WORDS[prefs.topic]) prefs.topic = "all";
+  pick.value = prefs.topic;
+
+  let state = null;
+
+  function randomWord() {
+    const cats = prefs.topic === "all" ? Object.keys(WORDS) : [prefs.topic];
+    let cat, word;
+    do {
+      cat = cats[Math.floor(Math.random() * cats.length)];
+      const list = WORDS[cat];
+      word = list[Math.floor(Math.random() * list.length)];
+    } while (state && word === state.word && Object.values(WORDS).flat().length > 1);
+    return { cat, word };
+  }
+
+  function newGame(given) {
+    const { cat, word } = given || randomWord();
+    state = { cat, word, guessed: given && given.guessed ? given.guessed : [], over: !!(given && given.over) };
+    render(true);
+  }
+
+  const letters = () => [...new Set(state.word.replace(/ /g, ""))];
+  const misses = () => state.guessed.filter((l) => !state.word.includes(l));
+  const solved = () => letters().every((l) => state.guessed.includes(l));
+
+  function guess(letter) {
+    if (!state || state.over || !AZBUKA.includes(letter) || state.guessed.includes(letter)) return;
+    state.guessed.push(letter);
+    render(false, letter);
+  }
+
+  function hint() {
+    if (state.over) return;
+    const hidden = letters().filter((l) => !state.guessed.includes(l));
+    if (hidden.length <= 1 || misses().length >= MAX - 1) return;
+    const l = hidden[Math.floor(Math.random() * hidden.length)];
+    state.guessed.push(l);
+    // Хинт кошта један покушај: додај „казнено“ погрешно слово које није у речи.
+    const penalty = [...AZBUKA].filter((x) => !state.word.includes(x) && !state.guessed.includes(x));
+    if (penalty.length) state.guessed.push(penalty[Math.floor(Math.random() * penalty.length)]);
+    render(false, l);
+  }
+
+  function render(fresh, justGuessed) {
+    const miss = misses();
+    const won = solved();
+    const lost = miss.length >= MAX;
+    if ((won || lost) && !state.over) {
+      state.over = true;
+      if (won) { stats.wins++; stats.streak++; } else { stats.losses++; stats.streak = 0; }
+      save();
+    }
+
+    $("cat").textContent = state.cat;
+    $("left").textContent = Math.max(0, MAX - miss.length);
+    $("wrong").textContent = miss.join(" ");
+    $("wins").textContent = stats.wins;
+    $("losses").textContent = stats.losses;
+    $("streak").textContent = stats.streak;
+    parts.forEach((p, i) => p.classList.toggle("on", i < miss.length));
+    app.classList.toggle("lost", lost);
+
+    wordEl.innerHTML = "";
+    for (const ch of state.word) {
+      if (ch === " ") {
+        const g = document.createElement("span"); g.className = "gap"; wordEl.appendChild(g); continue;
+      }
+      const s = document.createElement("span");
+      s.className = "slot";
+      if (state.guessed.includes(ch)) {
+        s.textContent = ch;
+        if (ch === justGuessed) s.classList.add("pop");
+      } else if (lost) {
+        s.textContent = ch; s.classList.add("missed");
+      }
+      wordEl.appendChild(s);
+    }
+    wordEl.setAttribute("aria-label", "Реч: " + [...state.word].map((c) => c === " " ? "размак" : (state.guessed.includes(c) || lost ? c : "празно")).join(", "));
+
+    const msg = $("msg");
+    msg.className = "message" + (won ? " win" : lost ? " lose" : "");
+    msg.textContent = won ? "Браво! Погођено!" : lost ? "Нема више покушаја. Реч је била: " + state.word : "";
+
+    kb.querySelectorAll(".k").forEach((b) => {
+      const l = b.dataset.l;
+      const g = state.guessed.includes(l);
+      b.classList.toggle("hit", g && state.word.includes(l));
+      b.classList.toggle("miss", g && !state.word.includes(l));
+      b.disabled = g || state.over;
+    });
+    const hidden = letters().filter((l) => !state.guessed.includes(l));
+    $("hint").disabled = state.over || hidden.length <= 1 || miss.length >= MAX - 1;
+    if (state.over) $("next").focus();
+  }
+
+  function buildKeyboard() {
+    const rows = prefs.layout === "qwerty" ? ROWS_QWERTY : ROWS_AZBUKA;
+    kb.className = "keyboard layout-" + prefs.layout;
+    kb.innerHTML = "";
+    rows.forEach((r) => {
+      const row = document.createElement("div");
+      row.className = "krow";
+      for (const l of r) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "k"; b.textContent = l; b.dataset.l = l; b.id = "k-" + l;
+        b.setAttribute("aria-label", "Слово " + l);
+        b.addEventListener("click", () => guess(l));
+        row.appendChild(b);
+      }
+      kb.appendChild(row);
+    });
+    $("layout").textContent = "Распоред: " + (prefs.layout === "qwerty" ? "тастатура" : "азбука");
+  }
+
+  $("layout").addEventListener("click", () => {
+    prefs.layout = prefs.layout === "qwerty" ? "azbuka" : "qwerty";
+    save(); buildKeyboard(); render(false);
+  });
+  $("next").addEventListener("click", () => newGame());
+  $("hint").addEventListener("click", hint);
+  pick.addEventListener("change", () => { prefs.topic = pick.value; save(); newGame(); });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target && (e.target.tagName === "SELECT")) return;
+    if (e.key === "Enter") {
+      if (state.over || e.target === document.body) { e.preventDefault(); newGame(); }
+      return;
+    }
+    if (e.key.length !== 1) return;
+    const k = e.key.toLowerCase();
+    const up = e.key.toUpperCase();
+    const letter = AZBUKA.includes(up) ? up : LATIN[k];
+    if (letter) { e.preventDefault(); guess(letter); }
+  });
+
+  function start(data) {
+    buildKeyboard();
+    if (data && data.state && data.state.word) newGame(data.state); else newGame();
+  }
+  window.claude?.hot?.snapshot?.(() => ({ state }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
